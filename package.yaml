@@ -1,0 +1,55 @@
+name:                csv2xml
+version:             0.1.0.0
+github:              "ki11nen0w/csv2xml"
+license:             BSD3
+author:              "Maksim Golubev"
+maintainer:          "maksim.golubev@gmail.com"
+copyright:           "2021 Maksim Golubev"
+
+extra-source-files:
+- README.md
+
+# Metadata used when publishing your package
+synopsis:            Command-line utility for converting of CSV (comma-separated values) data to an XML representaion
+category:            CSV,XML,Utility
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/ki11men0w/csv2xml#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  dependencies:
+    - cassava
+    - bytestring
+    - vector
+    - utf8-string
+
+executables:
+  csv2xml:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - csv2xml
+    - cmdargs
+    - temporary
+    - directory
+
+tests:
+  csv2xml-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - csv2xml
