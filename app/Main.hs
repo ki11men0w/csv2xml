@@ -5,7 +5,7 @@ module Main where
 import Lib
 import System.Environment (getProgName)
 import System.Console.CmdArgs
-import System.IO (IOMode (ReadMode), stdin, stdout, openFile, hGetContents, hSetEncoding, hSetBinaryMode)
+import System.IO (IOMode (ReadMode), stdin, stdout, openFile, hGetContents, hSetEncoding, hSetBinaryMode, hClose)
 import System.IO.Temp (withSystemTempFile)
 import System.Directory (copyFile)
 import Control.Monad (when)
@@ -113,6 +113,8 @@ main = do
       else
           withSystemTempFile "csv2xml.xml" $ \tmpFileP tmpFileH -> do
             convertCsv2Xml convertOptions inFileContent tmpFileH outputEncoding
+            hClose inFileH
+            hClose tmpFileH
             copyFile tmpFileP outFileName
 
 flagsToConvertConfig :: Flags -> Source -> ConvertConfig
