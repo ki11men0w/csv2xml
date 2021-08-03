@@ -99,7 +99,7 @@ main = do
       if inFileName == "-"
           then return (stdin, mkSourceFromStdin)
           else openFile inFileName ReadMode >>= \h -> mkSourceFromFilePath inFileName >>= \s ->  return (h, s)
-  hSetBinaryMode inFileH True
+  hSetBinaryMode inFileH False
   when (isJust inputEncoding) $
        hSetEncoding inFileH =<< mkTextEncoding' (fromJust inputEncoding)
   inFileContent <- hGetContents inFileH
