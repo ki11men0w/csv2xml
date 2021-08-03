@@ -111,7 +111,7 @@ convertCsv2Xml convertConfig csvInput outFileH outputEncoding = do
       hSetEncoding outFileH =<< mkTextEncoding' outputEncoding'
       hPutStrLn outFileH $ runConverting convertConfig $ makeDocument outputEncoding' r
   where
-    outputEncoding' = fromMaybe "utf-8" outputEncoding
+    outputEncoding' = fromMaybe "UTF-8" outputEncoding
     decodeOptions =
         let
             def = CSV.defaultDecodeOptions
