@@ -27,6 +27,7 @@ data Flags =
     , is_indexed_field_names :: Bool
     , xml_namespace :: Maybe String
     , tab_delimited :: Bool
+    , store_records_source :: Bool
     , file_names :: [FilePath]
     } deriving (Data, Typeable)
 
@@ -65,6 +66,9 @@ optsDefinition = getProgName >>= \programName -> return $
                  def
                  &= help "Specify this option if the fields in the input CSV file are separated by a tab character. By default, the fields are separated by a comma."
                  &= explicit &= name "t" &= name "tab-delimited"
+             , store_records_source =
+                 def
+                 &= help "If specified then every record will be acomplished with extra `sourceRecord` element that will contain original CSV record text"
              , file_names =
                  def &= args &= typ "INPUT_FILE [OUTPUT_FILE]"
              }
@@ -126,4 +130,5 @@ flagsToConvertConfig flags source =
     , fieldElementName = fromMaybe "f" $ field_element_name flags
     , xmlNameSpace = xml_namespace flags
     , source = Just source
+    , storeRecordsSource = store_records_source flags
     }

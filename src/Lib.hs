@@ -27,7 +27,9 @@ import Data.Time.LocalTime (ZonedTime, utcToLocalZonedTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Data.Time.Format (formatTime, defaultTimeLocale, iso8601DateFormat)
 import Control.Monad.Reader (ReaderT, runReaderT, asks, ask)
+import Control.Monad.State (State, evalState, gets, put, modify)
 import Control.Monad.Identity (Identity, runIdentity)
+import Data.List (intercalate, reverse, dropWhileEnd)
 
 type EncodingName = String
 
@@ -55,6 +57,7 @@ data ConvertConfig =
     , fieldElementName :: String
     , source :: Maybe Source
     , xmlNameSpace :: Maybe String
+    , storeRecordsSource :: Bool
     }
 
 mkDefaultConvertConfig :: ConvertConfig
@@ -66,7 +69,12 @@ mkDefaultConvertConfig =
     , fieldElementName = "f"
     , source = Nothing
     , xmlNameSpace = Nothing
+    , storeRecordsSource = False
     }
+
+type ConverterState = [String]
+
+mkStartConverterState = []
 
 mkTextEncoding' :: EncodingName -> IO TextEncoding
 mkTextEncoding' en =
@@ -112,11 +120,19 @@ convertCsv2Xml convertConfig csvInput outFileH outputEncoding = do
               then def { CSV.decDelimiter = fromIntegral (ord '\t') }
               else def
 
-type Converting a = ReaderT ConvertConfig Identity a
+type Converting a = ReaderT ConvertConfig (State ConverterState) a
 
 runConverting :: ConvertConfig -> Converting a -> a
 runConverting convertConfig act =
-    runIdentity $ runReaderT act convertConfig
+    flip evalState mkStartConverterState $
+    flip runReaderT convertConfig
+    act
+
+applyField :: String -> Converting ()
+applyField s = modify (s:)
+
+clearFields :: Converting ()
+clearFields = put []
 
 makeDocument :: EncodingName -> Records -> Converting String
 makeDocument outputEncoding records = do
@@ -145,7 +161,28 @@ mkRecords rs = concat <$> mapM mkRecord rs
 
 mkRecord :: Record -> Converting String
 mkRecord r =
-  asks (mkElement . recordElementName) <*> mkFields r
+  asks (mkElement . recordElementName) <*> ((<>) <$> mkFields r <*> mkRecordSource)
+
+mkRecordSource :: Converting String
+mkRecordSource = do
+  cfg <- ask
+  if storeRecordsSource cfg
+      then do
+        state' <- gets reverse
+        clearFields
+        let
+            encodeStoredRecord =
+                let eo  = CSV.defaultEncodeOptions { CSV.encIncludeHeader = False }
+                    eo' = CSV.defaultEncodeOptions { CSV.encDelimiter =
+                                                         if isTabDelimited cfg
+                                                             then fromIntegral ( ord '\t')
+                                                             else CSV.encDelimiter eo
+                                                   }
+                in
+                  dropWhileEnd (\c -> c == '\n' || c == '\r') $  BLU.toString $ CSV.encodeWith eo' [state']
+        return $ "<sourceRecord>" <> escapeCharacterData encodeStoredRecord <> "</sourceRecord>"
+      else
+          return ""
 
 mkFields :: Record -> Converting String
 mkFields fs = do
@@ -156,8 +193,10 @@ mkFields fs = do
     return $ concat fields
 
 mkField :: Field -> Converting String
-mkField f =
-  asks (mkElement . fieldElementName) <*>  pure (escapeCharacterData f)
+mkField f = do
+  cfg <- ask
+  when (storeRecordsSource cfg) $ applyField f
+  return $ mkElement (fieldElementName cfg) (escapeCharacterData f)
 
 mkIndexedField :: (Integer, Field) -> Converting String
 mkIndexedField (i, f) =
