@@ -165,7 +165,10 @@ mkIndexedField (i, f) =
 
 mkElement :: String -> String -> String
 mkElement elementName elementContent =
-    "<" <> elementName <> ">" <> elementContent <> "</" <> elementName <> ">"
+    if null elementContent
+        then "<" <> elementName <> "/>"
+        else
+            "<" <> elementName <> ">" <> elementContent <> "</" <> elementName <> ">"
 
 escapeCharacterData :: String -> String
 escapeCharacterData = concatMap $ \case
