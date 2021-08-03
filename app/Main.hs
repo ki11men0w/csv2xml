@@ -64,18 +64,18 @@ optsDefinition = getProgName >>= \programName -> return $
                  &= typ "XML_NAME_SPACE"
              , tab_delimited =
                  def
-                 &= help "Specify this option if the fields in the input CSV file are separated by a tab character. By default, the fields are separated by a comma."
+                 &= help "Specify this option if the fields in the input CSV file are separated by a tab character. By default, it is assumed that the fields are separated by a comma"
                  &= explicit &= name "t" &= name "tab-delimited"
              , store_records_source =
                  def
-                 &= help "If specified then every record will be acomplished with extra `sourceRecord` element that will contain original CSV record text"
+                 &= help "If specified, each record will be supplemented with an additional element `sourceRecord`, which will contain the source text of the corresponding CSV record"
              , file_names =
                  def &= args &= typ "INPUT_FILE [OUTPUT_FILE]"
              }
        &= program programName
        &= summary ("CSV to XML converter version " <> programVersion)
        &= details [ "Converts CSV file to XML representation."
-                  , "If you do not specify input/output file names on the command line then STDIN/STDOUT will be used. You also can explicitly specify to use standard input and output if specify a dash (\"-\") as file name."
+                  , "If an INPUT/OUTPUT file is not specified, STDIN/STDOUT will be used, respectively. You can also explicitly specify the use of standard IO streams: to do this, you need to specify a hyphen (\"-\") instead of the file names."
                   ]
 
 checkOptions :: Flags -> IO Flags
