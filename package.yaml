@@ -28,6 +28,10 @@ library:
     - bytestring
     - vector
     - utf8-string
+    - time
+    - directory
+    - unix-compat
+    - mtl
 
 executables:
   csv2xml:
