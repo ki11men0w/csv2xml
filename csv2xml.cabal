@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           csv2xml
-version:        1.0.0.0
+version:        1.0.1.0
 synopsis:       Command-line utility for converting of CSV (comma-separated values) data to an XML representaion
 description:    Please see the README on GitHub at <https://github.com/ki11men0w/csv2xml#readme>
 category:       CSV,XML,Utility
