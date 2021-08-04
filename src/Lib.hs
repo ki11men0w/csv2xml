@@ -180,7 +180,7 @@ mkRecordSource = do
                                                    }
                 in
                   dropWhileEnd (\c -> c == '\n' || c == '\r') $  BLU.toString $ CSV.encodeWith eo' [state']
-        return $ "<sourceRecord>" <> escapeCharacterData encodeStoredRecord <> "</sourceRecord>"
+        return $ mkElement "sourceRecord" $ escapeCharacterData encodeStoredRecord
       else
           return ""
 
@@ -199,7 +199,9 @@ mkField f = do
   return $ mkElement (fieldElementName cfg) (escapeCharacterData f)
 
 mkIndexedField :: (Integer, Field) -> Converting String
-mkIndexedField (i, f) =
+mkIndexedField (i, f) = do
+  cfg <- ask
+  when (storeRecordsSource cfg) $ applyField f
   asks (mkElement . (<> show i) . fieldElementName) <*> pure (escapeCharacterData f)
 
 mkElement :: String -> String -> String
